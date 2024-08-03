@@ -7,3 +7,6 @@
 [submodule "jni/src/hlsdk-portable"]
 	path = jni/src/hlsdk-portable
 	url = https://github.com/FWGS/hlsdk-portable
+[submodule "jni/src/Xash3D/xash3d"]
+	path = jni/src/Xash3D/xash3d
+	url = https://github.com/Physic3D/physic3d.git
