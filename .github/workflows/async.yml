@@ -19,7 +19,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.OREO_2530229_KEY }}
+        token: ${{ secrets.ORAL_3180262_KEY }}
         submodules: true
 
     # Update references
