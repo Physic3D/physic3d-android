@@ -1,0 +1,9 @@
+update:submodule:
+  extends: .git:push
+  rules:
+    - if: $UPDATE_SUBMODULE == "true"
+  script:
+    - cd "${CI_COMMIT_SHA}"
+    - git submodule update --init --recursive
+    - git submodule update --remote
+  stage: install
