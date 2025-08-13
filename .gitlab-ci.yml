@@ -1,3 +1,70 @@
+variables:
+  # https://hub.docker.com/r/alpine/git/tags
+  GIT_VERSION: v2.30.1
+
+# Description
+#   This script allows to store the artefacts of a step into the current
+#   repository, to improve the efficiency of the next build process.
+
+# Set up this script
+#   1. Create a new personal access token (https://gitlab.com/-/profile/personal_access_tokens)
+#      with the following scopes:
+#        - read_repository
+#        - write_repository
+#   2. Inside Settings -> CI / CD -> Variables, create the following variables:
+#
+#   GITLAB_TOKEN          Personal access token previously created.             XGE2-k445hd5fbs94v9d
+#     (masked)
+#   GITLAB_USERNAME       Username associated with the personal access token.   ranb2002
+#   COMMIT_MESSAGE        Commit message                                        Automatic update from the weekly schedule
+
+# Other variables used by this script
+#   The following variables are defined automatically by GitLab CI. Thus, you
+#   don't need to override them.
+#
+#   CI_COMMIT_SHA         Commit SHA, to use a unique directory name.           e46f153dd47ce5f3ca8c56be3fb5d55039853655
+#   CI_DEFAULT_BRANCH     Default branch.                                       main
+#   CI_PROJECT_PATH       Current project path.                                 ranb2002/benjaminrancourt.ca
+#   CI_SERVER_HOST        Hostname of the current GitLab instance.              gitlab.com
+#   GITLAB_USER_EMAIL     Email of the user used to commit the changes to the   ranb2002@gitlab.com
+#                         secondary repository.
+#   GITLAB_USER_NAME      User name of the user used to commit the changes to   Benjamin Rancourt
+#                         the secondary repository.
+
+.git:push:
+  after_script:
+    # Go to the new directory
+    - cd "${CI_COMMIT_SHA}"
+
+    # Add all generated files to Git
+    - git add .
+
+    - |-
+      # Check if we have modifications to commit
+      CHANGES=$(git status --porcelain | wc -l)
+
+      if [ "$CHANGES" -gt "0" ]; then
+        # Show the status of files that are about to be created, updated or deleted
+        git status
+
+        # Commit all changes
+        git commit -m "${COMMIT_MESSAGE}"
+
+        # Update the repository and make sure to skip the pipeline create for this commit
+        git push origin "${CI_DEFAULT_BRANCH}" -o ci.skip
+      fi
+  before_script:
+    # Clone the repository via HTTPS inside a new directory
+    - git clone "https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "${CI_COMMIT_SHA}"
+
+    # Set the displayed user with the commits that are about to be made
+    - git config --global user.email "${GIT_USER_EMAIL:-$GITLAB_USER_EMAIL}"
+    - git config --global user.name "${GIT_USER_NAME:-$GITLAB_USER_NAME}"
+  image:
+    entrypoint: ['']
+    name: alpine/git:${GIT_VERSION}
+  stage: deploy
+
 update:submodule:
   extends: .git:push
   rules:
